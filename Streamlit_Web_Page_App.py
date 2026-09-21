@@ -640,21 +640,24 @@ elif selected_module == "Model Performance & Metrics":
         with c1:
             st.subheader("Confusion Matrix")
             cm_raw = confusion_matrix(y_test_df, preds)
-            cm_norm = cm_raw.astype('float') / cm_raw.sum(axis=1)[:, np.newaxis]
+            row_sums = cm_raw.sum(axis=1)
+            
+            # FIX: Safely handle zero-division to prevent empty black boxes and 'nan%' text
+            cm_norm = cm_raw.astype('float') / np.where(row_sums == 0, 1, row_sums)[:, np.newaxis]
 
             annotation_text = [
                 [f"<b>{count:,}</b><br>({pct:.1%})" for count, pct in zip(row_raw, row_norm)]
                 for row_raw, row_norm in zip(cm_raw, cm_norm)
             ]
 
-            # UPDATED: Using go.Heatmap for maximum stability and exact text formatting
+            # FIX: Updated colorscale to 'Viridis' for highly distinct multi-colored boxes
             fig_cm = go.Figure(data=go.Heatmap(
                 z=cm_norm,
                 x=['Legitimate (0)', 'Fraud (1)'],
                 y=['Legitimate (0)', 'Fraud (1)'],
                 text=annotation_text,
                 texttemplate="%{text}",
-                colorscale='Blues',
+                colorscale='Viridis',
                 showscale=True
             ))
             
@@ -675,7 +678,6 @@ elif selected_module == "Model Performance & Metrics":
             report = classification_report(y_test_df, preds, output_dict=True)
             
             # Remove the 'accuracy' key before converting to a DataFrame 
-            # (This prevents the accuracy score from weirdly duplicating across precision/recall/support columns)
             if 'accuracy' in report:
                 del report['accuracy']
                 
@@ -693,15 +695,15 @@ elif selected_module == "Model Performance & Metrics":
             }
             report_df.rename(index=rename_map, inplace=True)
             
-            # Cast the 'support' column to integer (since these are transaction counts, not probabilities)
+            # Cast the 'support' column to integer
             report_df['support'] = report_df['support'].astype(int)
             
-            # Apply styling: background gradient and exact string formatting for clean decimals
-            styled_df = report_df.style.background_gradient(cmap='Blues').format({
+            # FIX: Removed the matplotlib-dependent background_gradient() to resolve the ImportError
+            styled_df = report_df.style.format({
                 'precision': '{:.3f}', 
                 'recall': '{:.3f}', 
                 'f1-score': '{:.3f}', 
-                'support': '{:,}' # Adds comma separators to thousands
+                'support': '{:,}' 
             })
             
             # Force the table height to 400px to perfectly match the adjacent Confusion Matrix
