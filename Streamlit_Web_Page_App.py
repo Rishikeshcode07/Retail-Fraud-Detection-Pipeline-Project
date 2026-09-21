@@ -207,8 +207,9 @@ def generate_synthetic_data(num_samples=2000):
 # This prevents Streamlit from reloading heavy .pkl files every time a button is clicked.
 @st.cache_resource
 def load_ml_models():
-    """Loads Random Forest and Isolation Forest models if present on disk."""
-    rf_path = find_file("random_forest_fraud_model.pkl")
+    """Loads Random Forest or falls back to Isolation Forest model present on disk."""
+    # Check for random_forest_fraud_model.pkl first, or fall back to isolation_forest_fraud_model.pkl
+    rf_path = find_file("random_forest_fraud_model.pkl") or find_file("isolation_forest_fraud_model.pkl")
     iso_path = find_file("isolation_forest_fraud_model.pkl")
     
     rf_model = joblib.load(rf_path) if rf_path else None
@@ -752,20 +753,29 @@ elif selected_module == "Merchant & Geographic Risk":
             # Render interactive scatter map using latitude and longitude points.
             # We use 'open-street-map' as the mapbox_style because it is entirely open-source 
             # and does not require a third-party API key (bypassing the Carto watermark issue).
-            fig_map = px.scatter_mapbox(
-                sample_map_df, 
-                lat='lat', 
-                lon='long', 
-                color='is_fraud', 
-                size='amt',
-                color_discrete_map={0: COLOR_PRIMARY_GREEN, 1: COLOR_PRIMARY_RED},
-                zoom=3, 
-                height=450, 
-                mapbox_style="open-street-map",  # Changed from 'carto-darkmatter' to avoid API key errors
-                labels={'is_fraud': 'Fraud Status'}
-            )
-            apply_chart_theme(fig_map, "")
-            st.plotly_chart(fig_map, use_container_width=True)
+            # Auto-detect whether latitude/longitude columns are named 'lat' or 'merch_lat'
+            lat_col = 'lat' if 'lat' in sample_map_df.columns else ('merch_lat' if 'merch_lat' in sample_map_df.columns else None)
+            lon_col = 'long' if 'long' in sample_map_df.columns else ('merch_long' if 'merch_long' in sample_map_df.columns else None)
+
+            if lat_col and lon_col:
+                try:
+                    fig_map = px.scatter_mapbox(
+                        sample_map_df, 
+                        lat=lat_col, 
+                        lon=lon_col, 
+                        color='is_fraud', 
+                        color_discrete_map={0: COLOR_PRIMARY_GREEN, 1: COLOR_PRIMARY_RED},
+                        zoom=3, 
+                        height=450, 
+                        mapbox_style="open-street-map",
+                        labels={'is_fraud': 'Fraud Status'}
+                    )
+                    apply_chart_theme(fig_map, "")
+                    st.plotly_chart(fig_map, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Geospatial Map Error: {e}")
+            else:
+                st.warning("Coordinate columns ('lat'/'merch_lat') not found in dataset.")
 
         with col2:
             st.subheader("Merchant Risk Leaderboard")
