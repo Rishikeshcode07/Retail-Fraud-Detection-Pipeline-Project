@@ -647,24 +647,25 @@ elif selected_module == "Model Performance & Metrics":
                 for row_raw, row_norm in zip(cm_raw, cm_norm)
             ]
 
-            fig_cm = ff.create_annotated_heatmap(
-                z=cm_norm,                                   
+            # UPDATED: Use px.imshow instead of the deprecated figure_factory
+            fig_cm = px.imshow(
+                cm_norm,                                   
                 x=['Legitimate (0)', 'Fraud (1)'],           
                 y=['Legitimate (0)', 'Fraud (1)'],           
-                annotation_text=annotation_text,            
-                colorscale='Blues',                          
-                showscale=True                               
+                color_continuous_scale='Blues'                              
             )
+            
+            # Inject your custom count and percentage text
+            fig_cm.update_traces(text=annotation_text, texttemplate="%{text}")
             
             apply_chart_theme(fig_cm, "")
             
-            # FIX: Keep height locked to match the table, but let width expand dynamically
+            # Keep height locked to match the table
             fig_cm.update_layout(
                 height=400,  
                 margin=dict(l=20, r=20, t=20, b=20) 
             )
             
-            # FIX: Set to True so it perfectly fills its half of the page
             st.plotly_chart(fig_cm, use_container_width=True)
 
         with c2:
@@ -759,7 +760,8 @@ elif selected_module == "Merchant & Geographic Risk":
 
             if lat_col and lon_col:
                 try:
-                    fig_map = px.scatter_mapbox(
+                    # UPDATED: Using px.scatter_map for modern Plotly support
+                    fig_map = px.scatter_map(
                         sample_map_df, 
                         lat=lat_col, 
                         lon=lon_col, 
@@ -767,7 +769,7 @@ elif selected_module == "Merchant & Geographic Risk":
                         color_discrete_map={0: COLOR_PRIMARY_GREEN, 1: COLOR_PRIMARY_RED},
                         zoom=3, 
                         height=450, 
-                        mapbox_style="open-street-map",
+                        map_style="open-street-map",
                         labels={'is_fraud': 'Fraud Status'}
                     )
                     apply_chart_theme(fig_map, "")
