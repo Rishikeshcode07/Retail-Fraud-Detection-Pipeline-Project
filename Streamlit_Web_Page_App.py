@@ -647,16 +647,16 @@ elif selected_module == "Model Performance & Metrics":
                 for row_raw, row_norm in zip(cm_raw, cm_norm)
             ]
 
-            # UPDATED: Use px.imshow instead of the deprecated figure_factory
-            fig_cm = px.imshow(
-                cm_norm,                                   
-                x=['Legitimate (0)', 'Fraud (1)'],           
-                y=['Legitimate (0)', 'Fraud (1)'],           
-                color_continuous_scale='Blues'                              
-            )
-            
-            # Inject your custom count and percentage text
-            fig_cm.update_traces(text=annotation_text, texttemplate="%{text}")
+            # UPDATED: Using go.Heatmap for maximum stability and exact text formatting
+            fig_cm = go.Figure(data=go.Heatmap(
+                z=cm_norm,
+                x=['Legitimate (0)', 'Fraud (1)'],
+                y=['Legitimate (0)', 'Fraud (1)'],
+                text=annotation_text,
+                texttemplate="%{text}",
+                colorscale='Blues',
+                showscale=True
+            ))
             
             apply_chart_theme(fig_cm, "")
             
