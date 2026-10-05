@@ -156,14 +156,12 @@ In high-volume retail environments, fraudulent transactions, revenue leakage, an
 **What was done & Why:** For leadership and management, operational metrics are visualized in Power BI. By directly connecting Power BI to the cleaned SQLite staging database, we created an automated reporting layer that tracks financial losses avoided, overall transaction volumes, and geographic fraud hotspots.
 
 * **Screenshot 13: Power BI Executive Summary Dashboard (Page 1)**
-* **Target File:** `images/13_powerbi_executive_summary.png`
 * **Explanation:** The high-level executive overview page. It features top-level KPI cards (Total Revenue, Fraud Incidents, Financial Loss Avoided) and trend lines, giving stakeholders immediate visibility into system performance.
-![Power BI Executive Summary Dashboard](images/13_powerbi_executive_summary.png)
+![image alt](https://github.com/user-attachments/assets/90c6c6f5-495b-4fe7-87bf-5715631cd442)
 
 * **Screenshot 14: Power BI Fraud Pattern & Category Deep-Dive (Page 2)**
-* **Target File:** `images/14_powerbi_fraud_patterns.png`
 * **Explanation:** An analytical deep-dive page within the report. It breaks down fraud occurrences by specific dimensions such as payment method, merchant category, and customer demographics to inform future security policies.
-![Power BI Fraud Breakdown & Category Analysis](images/14_powerbi_fraud_patterns.png)
+![image alt](https://github.com/user-attachments/assets/ab4ade8e-673d-4549-9907-8aa12b2ddbdf)
 
 ---
 
